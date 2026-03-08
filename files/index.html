@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOTE.EXE</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111;
+    --border: #2a2a2a;
+    --accent: #e8ff00;
+    --text: #f0f0f0;
+    --muted: #555;
+    --danger: #ff3c3c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, #1a1a1a 39px, #1a1a1a 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, #1a1a1a 39px, #1a1a1a 40px);
+  }
+
+  header {
+    width: 100%;
+    max-width: 680px;
+    border: 2px solid var(--accent);
+    padding: 20px 28px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    position: relative;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: 6px; left: 6px;
+    width: 100%; height: 100%;
+    border: 2px solid var(--border);
+    z-index: -1;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    color: var(--accent);
+    letter-spacing: 4px;
+    line-height: 1;
+  }
+
+  .subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .prompt {
+    width: 100%;
+    max-width: 680px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .prompt span { color: var(--accent); }
+
+  .options {
+    width: 100%;
+    max-width: 680px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .option-btn {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    color: var(--text);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 3px;
+    padding: 28px 20px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.12s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option-btn::after {
+    content: '▶ VOTE';
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    position: absolute;
+    bottom: 12px;
+    right: 14px;
+    color: var(--muted);
+    transition: color 0.12s;
+  }
+
+  .option-btn:hover {
+    border-color: var(--accent);
+    background: #161600;
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+
+  .option-btn:hover::after { color: var(--accent); }
+
+  .option-btn:active { transform: translate(0, 0); box-shadow: none; }
+
+  .option-btn.selected {
+    border-color: var(--accent);
+    background: #1a1a00;
+  }
+
+  /* Results Panel */
+  .results-panel {
+    width: 100%;
+    max-width: 680px;
+    border: 2px solid var(--border);
+    padding: 24px;
+    background: var(--surface);
+  }
+
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+  }
+
+  .results-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--accent);
+  }
+
+  .total-badge {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .total-badge strong { color: var(--text); font-size: 18px; }
+
+  .result-row {
+    margin-bottom: 16px;
+  }
+
+  .result-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .result-name { color: var(--text); }
+  .result-count { color: var(--muted); }
+  .result-pct { color: var(--accent); font-weight: 700; min-width: 46px; text-align: right; }
+
+  .bar-track {
+    height: 6px;
+    background: var(--border);
+    width: 100%;
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 0%;
+  }
+
+  /* JSON Output */
+  .json-section {
+    width: 100%;
+    max-width: 680px;
+    margin-top: 20px;
+  }
+
+  .json-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .json-box {
+    background: #050505;
+    border: 1px solid var(--border);
+    padding: 16px 20px;
+    font-size: 12px;
+    line-height: 1.7;
+    white-space: pre;
+    overflow-x: auto;
+    color: #ccc;
+  }
+
+  .json-box .key { color: #7ec8e3; }
+  .json-box .num { color: var(--accent); }
+  .json-box .str { color: #aaffaa; }
+
+  /* Controls */
+  .controls {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .ctrl-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.1s;
+  }
+
+  .ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .ctrl-btn.reset-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 12px 20px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.25s ease;
+    z-index: 100;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* Status */
+  .status {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 8px;
+    height: 14px;
+  }
+
+  .status.error { color: var(--danger); }
+  .status.ok { color: #4dff91; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>VOTE.EXE</h1>
+  <div class="subtitle">// live poll terminal &nbsp;·&nbsp; results in json</div>
+</header>
+
+<p class="prompt">SELECT ONE <span>→</span> WHICH LANGUAGE RULES?</p>
+
+<div class="options" id="options"></div>
+
+<div class="status" id="status"></div>
+
+<div class="results-panel">
+  <div class="results-header">
+    <span class="results-title">LIVE RESULTS</span>
+    <span class="total-badge">TOTAL <strong id="total">0</strong> VOTES</span>
+  </div>
+  <div id="result-rows"></div>
+</div>
+
+<div class="json-section">
+  <div class="json-label">// RAW JSON OUTPUT</div>
+  <div class="json-box" id="json-out">{ waiting for data... }</div>
+</div>
+
+<div class="controls">
+  <button class="ctrl-btn" onclick="fetchResults()">↺ REFRESH</button>
+  <button class="ctrl-btn reset-btn" onclick="resetVotes()">✕ RESET VOTES</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "http://localhost:5000";
+const OPTIONS = ["Python", "JavaScript", "Rust", "Go"];
+
+// Render vote buttons
+const optionsEl = document.getElementById("options");
+OPTIONS.forEach(opt => {
+  const btn = document.createElement("button");
+  btn.className = "option-btn";
+  btn.textContent = opt;
+  btn.onclick = () => castVote(opt);
+  optionsEl.appendChild(btn);
+});
+
+function setStatus(msg, type = "") {
+  const el = document.getElementById("status");
+  el.textContent = msg;
+  el.className = "status " + type;
+}
+
+async function castVote(option) {
+  setStatus("sending vote...");
+  try {
+    const res = await fetch(`${API}/vote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ option })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    showToast(`VOTED: ${option}`);
+    setStatus(`✓ vote cast for ${option}`, "ok");
+    await fetchResults();
+  } catch (e) {
+    setStatus(`✗ ${e.message || "connection failed"}`, "error");
+  }
+}
+
+async function fetchResults() {
+  try {
+    const res = await fetch(`${API}/results`);
+    const data = await res.json();
+    renderResults(data);
+    renderJSON(data);
+  } catch (e) {
+    setStatus("✗ cannot reach server — is Flask running on :5000?", "error");
+  }
+}
+
+function renderResults(data) {
+  document.getElementById("total").textContent = data.total;
+  const container = document.getElementById("result-rows");
+  container.innerHTML = "";
+
+  // Sort by votes desc
+  const sorted = Object.entries(data.votes).sort((a, b) => b[1] - a[1]);
+
+  sorted.forEach(([name, count]) => {
+    const pct = data.percentages[name] || 0;
+    const row = document.createElement("div");
+    row.className = "result-row";
+    row.innerHTML = `
+      <div class="result-meta">
+        <span class="result-name">${name}</span>
+        <span class="result-count">${count} vote${count !== 1 ? "s" : ""}</span>
+        <span class="result-pct">${pct}%</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
+    `;
+    container.appendChild(row);
+    // Animate bar
+    requestAnimationFrame(() => {
+      row.querySelector(".bar-fill").style.width = pct + "%";
+    });
+  });
+}
+
+function renderJSON(data) {
+  const box = document.getElementById("json-out");
+  const raw = JSON.stringify(data, null, 2);
+  // Syntax highlighting
+  box.innerHTML = raw
+    .replace(/("[\w]+")\s*:/g, '<span class="key">$1</span>:')
+    .replace(/:\s*(\d+\.?\d*)/g, ': <span class="num">$1</span>')
+    .replace(/:\s*(".*?")/g, ': <span class="str">$1</span>');
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+async function resetVotes() {
+  try {
+    await fetch(`${API}/reset`, { method: "POST" });
+    showToast("VOTES RESET");
+    setStatus("votes cleared", "ok");
+    await fetchResults();
+  } catch (e) {
+    setStatus("✗ reset failed", "error");
+  }
+}
+
+// Initial load
+fetchResults();
+setInterval(fetchResults, 5000); // auto-refresh every 5s
+</script>
+</body>
+</html>
